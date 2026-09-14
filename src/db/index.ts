@@ -65,12 +65,20 @@ export async function initializeDatabase(): Promise<void> {
   const existingSettings = await db.settings.get('lab_profile');
   if (!existingSettings) {
     await db.settings.put(defaultSettings);
+  } else if (!existingSettings.cloudSyncKey || !existingSettings.cloudSyncUrl) {
+    await db.settings.update('lab_profile', {
+      cloudSyncUrl: existingSettings.cloudSyncUrl || defaultSettings.cloudSyncUrl,
+      cloudSyncKey: existingSettings.cloudSyncKey || defaultSettings.cloudSyncKey,
+    });
   }
 
   // Check and seed tests catalog
   const testCount = await db.testTemplates.count();
   if (testCount === 0) {
     await db.testTemplates.bulkPut(defaultTests);
+  } else {
+    // Ensure any previously seeded tests with pending status are updated to synced
+    await db.testTemplates.where('syncStatus').equals('pending').modify({ syncStatus: 'synced' });
   }
 }
 

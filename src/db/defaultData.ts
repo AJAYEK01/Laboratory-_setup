@@ -53,7 +53,7 @@ export const defaultTests: TestTemplate[] = [
     sampleType: 'EDTA Whole Blood (2 ml)',
     isActive: true,
     updatedAt: new Date().toISOString(),
-    syncStatus: 'pending',
+    syncStatus: 'synced',
     interpretationNotes: 'Automated 5-part cell counter analysis verified with peripheral blood smear microscopy.',
     parameters: [
       {
@@ -187,7 +187,7 @@ export const defaultTests: TestTemplate[] = [
     sampleType: 'Fluoride Plasma (1 ml)',
     isActive: true,
     updatedAt: new Date().toISOString(),
-    syncStatus: 'pending',
+    syncStatus: 'synced',
     interpretationNotes: 'Fasting: 70-100 mg/dL normal. Post-Prandial < 140 mg/dL normal.',
     parameters: [
       {
@@ -217,7 +217,7 @@ export const defaultTests: TestTemplate[] = [
     sampleType: 'Serum (1.5 ml) - 12 Hours Fasting',
     isActive: true,
     updatedAt: new Date().toISOString(),
-    syncStatus: 'pending',
+    syncStatus: 'synced',
     interpretationNotes: 'Desirable: Total Cholesterol < 200 mg/dL, Triglycerides < 150 mg/dL.',
     parameters: [
       {
@@ -279,7 +279,7 @@ export const defaultTests: TestTemplate[] = [
     sampleType: 'Serum (2 ml)',
     isActive: true,
     updatedAt: new Date().toISOString(),
-    syncStatus: 'pending',
+    syncStatus: 'synced',
     parameters: [
       {
         id: 'p-urea',
@@ -320,7 +320,7 @@ export const defaultTests: TestTemplate[] = [
     sampleType: 'Serum (2 ml)',
     isActive: true,
     updatedAt: new Date().toISOString(),
-    syncStatus: 'pending',
+    syncStatus: 'synced',
     parameters: [
       {
         id: 'p-bili-tot',
@@ -389,7 +389,7 @@ export const defaultTests: TestTemplate[] = [
     sampleType: 'Clean Catch Midstream Urine (20 ml)',
     isActive: true,
     updatedAt: new Date().toISOString(),
-    syncStatus: 'pending',
+    syncStatus: 'synced',
     parameters: [
       { id: 'p-u-color', name: 'Color', unit: '', normalRangeText: 'Pale Yellow / Straw', options: ['Pale Yellow', 'Yellow', 'Amber', 'Reddish', 'Straw'], defaultValue: 'Pale Yellow' },
       { id: 'p-u-trans', name: 'Transparency', unit: '', normalRangeText: 'Clear', options: ['Clear', 'Hazy', 'Turbid'], defaultValue: 'Clear' },
@@ -412,7 +412,7 @@ export const defaultTests: TestTemplate[] = [
     sampleType: 'Serum (1 ml)',
     isActive: true,
     updatedAt: new Date().toISOString(),
-    syncStatus: 'pending',
+    syncStatus: 'synced',
     parameters: [
       { id: 'p-w-o', name: 'S. Typhi \'O\' Antigen', unit: 'Titre', normalRangeText: '< 1:80 Negative', options: ['Negative (< 1:80)', '1:80', '1:160 (Positive)', '1:320 (Positive)'], defaultValue: 'Negative (< 1:80)' },
       { id: 'p-w-h', name: 'S. Typhi \'H\' Antigen', unit: 'Titre', normalRangeText: '< 1:80 Negative', options: ['Negative (< 1:80)', '1:80', '1:160 (Positive)', '1:320 (Positive)'], defaultValue: 'Negative (< 1:80)' },
@@ -430,7 +430,7 @@ export const defaultTests: TestTemplate[] = [
     sampleType: 'Whole Blood / Fingerprick',
     isActive: true,
     updatedAt: new Date().toISOString(),
-    syncStatus: 'pending',
+    syncStatus: 'synced',
     parameters: [
       { id: 'p-m-pv', name: 'Plasmodium vivax (Pv)', unit: '', normalRangeText: 'Negative', options: ['Negative', 'Positive'], defaultValue: 'Negative' },
       { id: 'p-m-pf', name: 'Plasmodium falciparum (Pf)', unit: '', normalRangeText: 'Negative', options: ['Negative', 'Positive'], defaultValue: 'Negative' },
@@ -445,7 +445,7 @@ export const defaultTests: TestTemplate[] = [
     sampleType: 'Whole Blood (1 ml)',
     isActive: true,
     updatedAt: new Date().toISOString(),
-    syncStatus: 'pending',
+    syncStatus: 'synced',
     parameters: [
       { id: 'p-bg', name: 'ABO Blood Group', unit: '', normalRangeText: 'A / B / AB / O', options: ['A Positive', 'A Negative', 'B Positive', 'B Negative', 'O Positive', 'O Negative', 'AB Positive', 'AB Negative'], defaultValue: 'B Positive' },
       { id: 'p-rh', name: 'Rh (D) Factor', unit: '', normalRangeText: 'Positive / Negative', options: ['Positive', 'Negative'], defaultValue: 'Positive' },

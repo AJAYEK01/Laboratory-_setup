@@ -15,6 +15,7 @@ import {
   Building2
 } from 'lucide-react';
 import { db } from '../db/index';
+import { defaultTests } from '../db/defaultData';
 import type { Patient, TestOrder, OrderTestItem, Gender, AgeUnit, PaymentStatus, PaymentMode, TestTemplate } from '../types/lab';
 import { useAuth } from '../context/AuthContext';
 
@@ -24,7 +25,20 @@ interface NewBookingProps {
 
 export const NewBooking: React.FC<NewBookingProps> = ({ onOrderCreated }) => {
   const { currentBranch } = useAuth();
-  const tests = useLiveQuery(() => db.testTemplates.where('isActive').equals(1).toArray(), []) || [];
+  const allTemplates = useLiveQuery(() => db.testTemplates.toArray(), []) || [];
+  const tests = useMemo(() => allTemplates.filter(t => t.isActive !== false), [allTemplates]);
+
+  // Self-healing check: ensure tests are immediately available if empty
+  useEffect(() => {
+    if (allTemplates.length === 0) {
+      db.testTemplates.count().then(count => {
+        if (count === 0) {
+          db.testTemplates.bulkPut(defaultTests);
+        }
+      });
+    }
+  }, [allTemplates.length]);
+
   const settings = useLiveQuery(() => db.settings.get('lab_profile'), []);
 
   const [patientName, setPatientName] = useState('');
