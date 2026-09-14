@@ -107,7 +107,7 @@ export const LoginModal: React.FC = () => {
               className="w-full text-left p-2 rounded-lg bg-slate-50 hover:bg-teal-50 hover:border-teal-300 border border-slate-200 text-xs flex justify-between items-center transition-colors"
             >
               <div>
-                <strong className="text-slate-900 block font-semibold">👑 Lab Owner (All Branches)</strong>
+                <strong className="text-slate-900 block font-semibold">Lab Owner (All Branches)</strong>
                 <span className="text-[10px] text-slate-500">username: owner</span>
               </div>
               <span className="text-[10px] bg-slate-200 px-1.5 py-0.5 rounded font-mono">Fill</span>
@@ -119,7 +119,7 @@ export const LoginModal: React.FC = () => {
               className="w-full text-left p-2 rounded-lg bg-slate-50 hover:bg-teal-50 hover:border-teal-300 border border-slate-200 text-xs flex justify-between items-center transition-colors"
             >
               <div>
-                <strong className="text-slate-900 block font-semibold">🏥 Branch 1 Tech (Village Rampur)</strong>
+                <strong className="text-slate-900 block font-semibold">Branch 1 Tech (Koottummugham)</strong>
                 <span className="text-[10px] text-slate-500">username: tech_rampur</span>
               </div>
               <span className="text-[10px] bg-slate-200 px-1.5 py-0.5 rounded font-mono">Fill</span>
@@ -131,7 +131,7 @@ export const LoginModal: React.FC = () => {
               className="w-full text-left p-2 rounded-lg bg-slate-50 hover:bg-teal-50 hover:border-teal-300 border border-slate-200 text-xs flex justify-between items-center transition-colors"
             >
               <div>
-                <strong className="text-slate-900 block font-semibold">🏥 Branch 2 Tech (Tehsil HQ Central)</strong>
+                <strong className="text-slate-900 block font-semibold">Branch 2 Tech (Chandanakkampara)</strong>
                 <span className="text-[10px] text-slate-500">username: tech_tehsil</span>
               </div>
               <span className="text-[10px] bg-slate-200 px-1.5 py-0.5 rounded font-mono">Fill</span>

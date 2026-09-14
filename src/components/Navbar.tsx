@@ -161,8 +161,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, setting
             {/* User Session Button */}
             {user ? (
               <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs">
-                <span className="font-bold text-amber-300">
-                  {user.role === 'owner' ? '👑 Owner' : `🏥 Tech (${user.username})`}
+                <span className="font-semibold text-slate-200">
+                  {user.role === 'owner' ? 'Owner' : `Tech (${user.username})`}
                 </span>
                 <button
                   onClick={logout}
