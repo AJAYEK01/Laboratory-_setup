@@ -11,6 +11,10 @@
   }
 }
 
+.font-manjari {
+  font-family: 'Manjari', 'Noto Sans Malayalam', sans-serif;
+}
+
 @media print {
   body {
     background: white !important;

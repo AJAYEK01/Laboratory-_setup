@@ -75,9 +75,18 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, setting
                 {settings?.labName || 'DIVINE LABORATORY'}
               </h1>
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-teal-400 font-bold tracking-wider uppercase">
-                  {isOwner ? 'Executive Portal (Central HQ)' : `[${currentBranch.code}] ${currentBranch.name.replace('Divine Laboratory - ', '')}`}
-                </span>
+                {isOwner ? (
+                  <span className="text-teal-400 font-bold tracking-wider uppercase">
+                    Executive Portal (Central HQ)
+                  </span>
+                ) : (
+                  <span className="text-teal-300 font-bold tracking-wide flex items-center gap-1.5">
+                    <span className="text-teal-400">[{currentBranch.code}]</span>
+                    <span className="font-manjari font-semibold text-white">
+                      {currentBranch.id === 'branch-02' ? 'ചന്ദനക്കാംപാറ (പയ്യാവൂർ)' : 'കൂട്ടുമ്മുഖം (ശ്രീകണ്ഠപുരം)'}
+                    </span>
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -91,19 +100,22 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, setting
                 <select
                   value={currentBranch.id}
                   onChange={(e) => switchBranch(e.target.value)}
-                  className="bg-slate-900 border border-slate-700 text-xs font-bold text-teal-300 rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
+                  className="bg-slate-900 border border-slate-700 text-xs font-bold text-teal-300 rounded-lg px-2 py-1 focus:outline-none cursor-pointer font-manjari"
                 >
                   {availableBranches.map(b => (
-                    <option key={b.id} value={b.id} className="bg-slate-800 text-white">
-                      [{b.code}] {b.name.replace('Divine Laboratory - ', '')}
+                    <option key={b.id} value={b.id} className="bg-slate-800 text-white font-manjari">
+                      [{b.code}] {b.id === 'branch-02' ? 'ചന്ദനക്കാംപാറ (Payyavoor)' : 'കൂട്ടുമ്മുഖം (Sreekandapuram)'}
                     </option>
                   ))}
                 </select>
               </div>
             ) : (
-              <div className="text-xs font-bold text-teal-300">
+              <div className="text-xs font-bold text-teal-300 flex items-center gap-1">
                 <span className="text-slate-400 font-normal mr-1">Counter:</span>
-                [{currentBranch.code}] {currentBranch.name.replace('Divine Laboratory - ', '')}
+                <span>[{currentBranch.code}]</span>
+                <span className="font-manjari text-white font-semibold">
+                  {currentBranch.id === 'branch-02' ? 'ചന്ദനക്കാംപാറ' : 'കൂട്ടുമ്മുഖം'}
+                </span>
               </div>
             )}
           </div>

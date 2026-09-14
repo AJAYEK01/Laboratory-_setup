@@ -8,6 +8,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Roboto', 'sans-serif'],
+        manjari: ['Manjari', 'sans-serif'],
       },
       colors: {
         primary: {

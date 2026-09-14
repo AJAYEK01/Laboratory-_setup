@@ -386,8 +386,8 @@ export const RecordsList: React.FC<RecordsListProps> = ({
                 className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
               >
                 <option value="all">All Branches (Consolidated)</option>
-                <option value="branch-01">Koottummugham (BR01)</option>
-                <option value="branch-02">Chandanakkampara (BR02)</option>
+                <option value="branch-01">കൂട്ടുമ്മുഖം - Koottummugham (BR01)</option>
+                <option value="branch-02">ചന്ദനക്കാംപാറ - Chandanakkampara (BR02)</option>
               </select>
             </div>
           )}
@@ -447,12 +447,15 @@ export const RecordsList: React.FC<RecordsListProps> = ({
 
                       {user?.role === 'owner' && (
                         <td className="py-3.5 px-4 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-bold ${
                             order.branchCode === 'BR02' || order.branchId === 'branch-02'
-                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                              : 'bg-teal-50 text-teal-700 border border-teal-200'
+                              ? 'bg-indigo-50 text-indigo-800 border border-indigo-200'
+                              : 'bg-teal-50 text-teal-800 border border-teal-200'
                           }`}>
-                            {order.branchCode === 'BR02' || order.branchId === 'branch-02' ? 'BR02 Payyavoor' : 'BR01 Koottummugham'}
+                            <span>{order.branchCode === 'BR02' || order.branchId === 'branch-02' ? 'BR02' : 'BR01'}</span>
+                            <span className="font-manjari font-semibold">
+                              {order.branchCode === 'BR02' || order.branchId === 'branch-02' ? 'ചന്ദനക്കാംപാറ' : 'കൂട്ടുമ്മുഖം'}
+                            </span>
                           </span>
                         </td>
                       )}

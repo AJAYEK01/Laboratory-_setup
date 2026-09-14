@@ -100,11 +100,11 @@ export const ReportPrint: React.FC<ReportPrintProps> = ({ orderId, onBack }) => 
               <div className="text-[11px] text-slate-600 mt-2 space-y-1">
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
                   <span>
-                    <strong className="text-slate-800 font-bold">Branch 1:</strong> Koottummugham, Sreekandapuram
+                    <strong className="text-slate-800 font-bold">Branch 1:</strong> Koottummugham, Sreekandapuram <span className="font-manjari text-slate-700 font-medium">(കൂട്ടുമ്മുഖം, ശ്രീകണ്ഠപുരം)</span>
                   </span>
                   <span>•</span>
                   <span>
-                    <strong className="text-slate-800 font-bold">Branch 2:</strong> Chandanakkampara, Payyavoor
+                    <strong className="text-slate-800 font-bold">Branch 2:</strong> Chandanakkampara, Payyavoor <span className="font-manjari text-slate-700 font-medium">(ചന്ദനക്കാംപാറ, പയ്യാവൂർ)</span>
                   </span>
                 </div>
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-slate-500">

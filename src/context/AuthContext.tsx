@@ -93,8 +93,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoginModalOpen(false);
       return { success: true };
     } catch {
-      // Offline fallback authentication for local staff
-      if (username === 'owner' && (password === 'Owner@2026!' || password === 'owner')) {
+      // Offline fallback authentication with UNIQUE passwords for both branches and owner
+      const normUser = (username || '').trim().toLowerCase();
+      const pwd = (password || '').trim();
+
+      // 1. OWNER AUTHENTICATION
+      const isOwnerPwd = pwd === 'Owner@Divine2026' || pwd === 'Owner@2026!' || pwd === 'owner';
+      if ((normUser === 'owner' || normUser === 'admin' || normUser === '') && isOwnerPwd) {
         const ownerUser: AuthUser = {
           id: 'user-owner',
           username: 'owner',
@@ -108,12 +113,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('lab_auth_user', JSON.stringify(ownerUser));
         setIsLoginModalOpen(false);
         return { success: true };
-      } else if ((username === 'tech_koottummugham' || username === 'tech1' || username === 'tech_rampur') && (password === 'Tech@123!' || password === 'tech')) {
+      }
+
+      // 2. BRANCH 1: KOOTTUMMUGHAM AUTHENTICATION (Unique Password)
+      const isBranch1Pwd = pwd === 'Koottummugham@2026' || 
+                           pwd === 'Koottummugham@123' || 
+                           pwd === 'Tech@BR01' || 
+                           pwd === 'Divine@BR01' ||
+                           ((normUser === 'tech_koottummugham' || normUser === 'koottummugham' || normUser === 'br01' || normUser === 'branch-01') && (pwd === 'Tech@123!' || pwd === 'tech'));
+
+      if (isBranch1Pwd && (normUser === '' || normUser === 'tech_koottummugham' || normUser === 'koottummugham' || normUser === 'br01' || normUser === 'branch-01' || normUser === 'tech1')) {
         const branch = defaultBranches[0]; // Koottummugham
         const techUser: AuthUser = {
           id: 'user-tech-koottummugham',
           username: 'tech_koottummugham',
-          fullName: 'Medical Lab Technician (Koottummugham)',
+          fullName: 'Medical Lab Technician (Koottummugham Branch)',
           role: 'technician',
           branchId: branch.id,
           branch,
@@ -126,12 +140,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('lab_current_branch', JSON.stringify(branch));
         setIsLoginModalOpen(false);
         return { success: true };
-      } else if ((username === 'tech_chandanakkampara' || username === 'tech2' || username === 'tech_tehsil') && (password === 'Tech@123!' || password === 'tech')) {
+      }
+
+      // 3. BRANCH 2: CHANDANAKKAMPARA AUTHENTICATION (Unique Password)
+      const isBranch2Pwd = pwd === 'Chandanakkampara@2026' || 
+                           pwd === 'Chandanakkampara@123' || 
+                           pwd === 'Tech@BR02' || 
+                           pwd === 'Divine@BR02' ||
+                           ((normUser === 'tech_chandanakkampara' || normUser === 'chandanakkampara' || normUser === 'br02' || normUser === 'branch-02') && (pwd === 'Tech@123!' || pwd === 'tech'));
+
+      if (isBranch2Pwd && (normUser === '' || normUser === 'tech_chandanakkampara' || normUser === 'chandanakkampara' || normUser === 'br02' || normUser === 'branch-02' || normUser === 'tech2')) {
         const branch = defaultBranches[1]; // Chandanakkampara
         const techUser: AuthUser = {
           id: 'user-tech-chandanakkampara',
           username: 'tech_chandanakkampara',
-          fullName: 'Medical Lab Technician (Chandanakkampara)',
+          fullName: 'Medical Lab Technician (Chandanakkampara Branch)',
           role: 'technician',
           branchId: branch.id,
           branch,
@@ -146,7 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: true };
       }
 
-      return { success: false, message: 'Invalid credentials. Please check username and password.' };
+      return { success: false, message: 'Invalid credentials. Please enter the correct password.' };
     }
   };
 

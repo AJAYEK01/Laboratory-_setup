@@ -15,7 +15,7 @@ export const LoginPage: React.FC = () => {
   const [loginType, setLoginType] = useState<'technician' | 'owner'>('technician');
 
   // Technician Form
-  const [selectedBranch, setSelectedBranch] = useState<'branch-01' | 'branch-02'>('branch-01');
+  const [techUsername, setTechUsername] = useState('');
   const [techPassword, setTechPassword] = useState('');
 
   // Owner Form
@@ -28,51 +28,40 @@ export const LoginPage: React.FC = () => {
   const handleTechLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    const pwd = techPassword.trim();
+    if (!pwd) {
+      setErrorMessage('Please enter your branch password.');
+      return;
+    }
+
     setIsLoading(true);
-
-    const username = selectedBranch === 'branch-01' ? 'tech_koottummugham' : 'tech_chandanakkampara';
-    const pwd = techPassword.trim() || 'Tech@123!';
-
+    const username = techUsername.trim();
     const result = await login(username, pwd);
     setIsLoading(false);
 
     if (!result.success) {
-      setErrorMessage(result.message || 'Login failed. Please check your password.');
+      setErrorMessage(result.message || 'Invalid password. Please enter the unique password for your branch.');
     }
   };
 
   const handleOwnerLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+
+    const pwd = ownerPassword.trim();
+    if (!pwd) {
+      setErrorMessage('Please enter owner password.');
+      return;
+    }
+
     setIsLoading(true);
-
     const username = ownerUsername.trim() || 'owner';
-    const pwd = ownerPassword.trim() || 'Owner@2026!';
-
     const result = await login(username, pwd);
     setIsLoading(false);
 
     if (!result.success) {
       setErrorMessage(result.message || 'Invalid owner credentials.');
-    }
-  };
-
-  const handleQuickLogin = async (type: 'tech1' | 'tech2' | 'owner') => {
-    setIsLoading(true);
-    setErrorMessage(null);
-
-    let res;
-    if (type === 'tech1') {
-      res = await login('tech_koottummugham', 'Tech@123!');
-    } else if (type === 'tech2') {
-      res = await login('tech_chandanakkampara', 'Tech@123!');
-    } else {
-      res = await login('owner', 'Owner@2026!');
-    }
-
-    setIsLoading(false);
-    if (!res.success) {
-      setErrorMessage(res.message || 'Quick login failed.');
     }
   };
 
@@ -85,11 +74,12 @@ export const LoginPage: React.FC = () => {
           <div className="w-12 h-12 rounded-xl bg-teal-800 text-white flex items-center justify-center mx-auto mb-3 shadow-md">
             <Activity className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight uppercase font-sans">
             DIVINE LABORATORY
           </h1>
-          <p className="text-xs text-slate-500 mt-1 font-medium">
-            Koottummugham (Sreekandapuram) &amp; Chandanakkampara (Payyavoor)
+          {/* Only place names in Malayalam using Manjeri font */}
+          <p className="text-xs sm:text-sm text-slate-600 mt-1.5 font-semibold font-manjari">
+            കൂട്ടുമ്മുഖം (ശ്രീകണ്ഠപുരം) &amp; ചന്ദനക്കാംപാറ (പയ്യാവൂർ)
           </p>
         </div>
 
@@ -100,7 +90,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => { setLoginType('technician'); setErrorMessage(null); }}
-              className={`py-3 text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`py-3.5 text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                 loginType === 'technician'
                   ? 'bg-white text-teal-800 border-b-2 border-teal-700 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -113,7 +103,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => { setLoginType('owner'); setErrorMessage(null); }}
-              className={`py-3 text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              className={`py-3.5 text-xs font-bold transition-all flex items-center justify-center gap-2 ${
                 loginType === 'owner'
                   ? 'bg-white text-teal-800 border-b-2 border-teal-700 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
@@ -138,52 +128,51 @@ export const LoginPage: React.FC = () => {
               <form onSubmit={handleTechLogin} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Select Your Branch
+                    Branch Username / ID <span className="text-slate-400 font-normal">(Optional)</span>
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedBranch('branch-01')}
-                      className={`p-3 rounded-xl border text-left transition-all ${
-                        selectedBranch === 'branch-01'
-                          ? 'border-teal-700 bg-teal-50/70 text-teal-950 ring-1 ring-teal-600'
-                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="text-[10px] font-bold text-teal-800 uppercase block">Branch 1 (BR01)</span>
-                      <strong className="text-xs font-bold text-slate-900 block mt-0.5">Koottummugham</strong>
-                      <span className="text-[10px] text-slate-500 block">Sreekandapuram</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedBranch('branch-02')}
-                      className={`p-3 rounded-xl border text-left transition-all ${
-                        selectedBranch === 'branch-02'
-                          ? 'border-teal-700 bg-teal-50/70 text-teal-950 ring-1 ring-teal-600'
-                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="text-[10px] font-bold text-teal-800 uppercase block">Branch 2 (BR02)</span>
-                      <strong className="text-xs font-bold text-slate-900 block mt-0.5">Chandanakkampara</strong>
-                      <span className="text-[10px] text-slate-500 block">Payyavoor</span>
-                    </button>
+                  <div className="relative">
+                    <User className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      placeholder="koottummugham or chandanakkampara"
+                      value={techUsername}
+                      onChange={(e) => setTechUsername(e.target.value)}
+                      className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-300 focus:border-teal-700 focus:outline-none text-xs font-medium text-slate-800"
+                    />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Technician Access Code / Password
+                    Unique Branch Password <span className="text-rose-600">*</span>
                   </label>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                     <input
                       type="password"
-                      placeholder="Enter password (default: Tech@123!)"
+                      placeholder="Enter unique branch password"
                       value={techPassword}
                       onChange={(e) => setTechPassword(e.target.value)}
                       className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-300 focus:border-teal-700 focus:outline-none text-xs font-medium text-slate-800"
+                      autoFocus
                     />
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+                    Entering your unique branch password automatically opens your branch counter.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] space-y-1.5 text-slate-600">
+                  <span className="font-bold text-slate-800 block uppercase text-[10px] tracking-wider">
+                    Branch Passwords:
+                  </span>
+                  <div className="flex items-center justify-between">
+                    <span><strong className="font-manjari font-bold text-teal-800">കൂട്ടുമ്മുഖം</strong> (Koottummugham):</span>
+                    <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-mono text-[10px] text-teal-900 font-bold">Koottummugham@2026</code>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span><strong className="font-manjari font-bold text-teal-800">ചന്ദനക്കാംപാറ</strong> (Chandanakkampara):</span>
+                    <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-mono text-[10px] text-teal-900 font-bold">Chandanakkampara@2026</code>
                   </div>
                 </div>
 
@@ -219,18 +208,24 @@ export const LoginPage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Owner Password
+                    Unique Owner Password <span className="text-rose-600">*</span>
                   </label>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                     <input
                       type="password"
-                      placeholder="Enter owner password (default: Owner@2026!)"
+                      placeholder="Enter owner password"
                       value={ownerPassword}
                       onChange={(e) => setOwnerPassword(e.target.value)}
                       className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-300 focus:border-teal-700 focus:outline-none text-xs font-medium text-slate-800"
+                      autoFocus
                     />
                   </div>
+                </div>
+
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] flex items-center justify-between text-slate-600">
+                  <span className="font-semibold text-slate-700">Owner Password:</span>
+                  <code className="bg-white px-1.5 py-0.5 rounded border border-slate-200 font-mono text-[10px] text-slate-900 font-bold">Owner@Divine2026</code>
                 </div>
 
                 <button
@@ -243,37 +238,6 @@ export const LoginPage: React.FC = () => {
                 </button>
               </form>
             )}
-
-            {/* Quick 1-Click Access for Local Offline Operation */}
-            <div className="mt-6 pt-4 border-t border-slate-100">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">
-                1-Click Quick Access:
-              </span>
-              <div className="grid grid-cols-3 gap-1.5 text-[11px]">
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('tech1')}
-                  className="p-1.5 bg-slate-50 hover:bg-teal-50 hover:border-teal-300 border border-slate-200 rounded-lg text-slate-700 font-semibold text-center transition-colors"
-                >
-                  Koottummugham
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('tech2')}
-                  className="p-1.5 bg-slate-50 hover:bg-teal-50 hover:border-teal-300 border border-slate-200 rounded-lg text-slate-700 font-semibold text-center transition-colors"
-                >
-                  Chandanakkampara
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickLogin('owner')}
-                  className="p-1.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-semibold text-center transition-colors"
-                >
-                  Owner Portal
-                </button>
-              </div>
-            </div>
-
           </div>
         </div>
 

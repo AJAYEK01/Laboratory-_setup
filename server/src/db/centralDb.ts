@@ -150,11 +150,10 @@ class CentralDBManager {
       },
     ];
 
-    // 2. Seed Default Accounts
-    // Owner password: 'Owner@2026!'
-    // Tech password:  'Tech@123!'
-    const ownerHash = bcrypt.hashSync('Owner@2026!', 10);
-    const techHash = bcrypt.hashSync('Tech@123!', 10);
+    // 2. Seed Default Accounts with UNIQUE Passwords
+    const ownerHash = bcrypt.hashSync('Owner@Divine2026', 10);
+    const techKoottummughamHash = bcrypt.hashSync('Koottummugham@2026', 10);
+    const techChandanakkamparaHash = bcrypt.hashSync('Chandanakkampara@2026', 10);
 
     const users: User[] = [
       {
@@ -171,7 +170,7 @@ class CentralDBManager {
         id: 'user-tech-koottummugham',
         branchId: 'branch-01',
         username: 'tech_koottummugham',
-        passwordHash: techHash,
+        passwordHash: techKoottummughamHash,
         fullName: 'Medical Lab Technician (Koottummugham Branch)',
         role: 'technician',
         isActive: true,
@@ -181,7 +180,7 @@ class CentralDBManager {
         id: 'user-tech-chandanakkampara',
         branchId: 'branch-02',
         username: 'tech_chandanakkampara',
-        passwordHash: techHash,
+        passwordHash: techChandanakkamparaHash,
         fullName: 'Medical Lab Technician (Chandanakkampara Branch)',
         role: 'technician',
         isActive: true,
