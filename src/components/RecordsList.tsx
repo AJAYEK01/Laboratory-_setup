@@ -6,9 +6,11 @@ import {
   Calendar, 
   Printer, 
   Trash2,
-  Filter
+  Filter,
+  TrendingUp
 } from 'lucide-react';
 import { db } from '../db/index';
+import { PatientTrendGraph } from './PatientTrendGraph';
 
 interface RecordsListProps {
   onSelectOrderForResults: (orderId: string) => void;
@@ -23,6 +25,7 @@ export const RecordsList: React.FC<RecordsListProps> = ({
   const [dateFilter, setDateFilter] = useState<'today' | 'yesterday' | 'week' | 'month' | 'all' | 'custom'>('all');
   const [customDate, setCustomDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [trendPatient, setTrendPatient] = useState<{ id: string; name: string; phone?: string } | null>(null);
 
   const settings = useLiveQuery(() => db.settings.get('lab_profile'), []);
   const allOrders = useLiveQuery(() => db.orders.orderBy('createdAt').reverse().toArray(), []) || [];
@@ -342,27 +345,36 @@ export const RecordsList: React.FC<RecordsListProps> = ({
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 whitespace-nowrap text-right space-x-1">
+                      <td className="py-3.5 px-4 whitespace-nowrap text-right space-x-1.5">
                         <button
                           onClick={() => onSelectOrderForResults(order.id)}
-                          className="px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-800 font-semibold rounded-lg text-xs transition-colors"
+                          className="px-2.5 py-1.5 bg-sky-50 hover:bg-sky-100 text-sky-800 font-bold rounded-lg text-xs transition-colors"
                           title="Enter or update test results"
                         >
                           Results
                         </button>
 
                         <button
-                          onClick={() => onSelectOrderForPrint(order.id)}
-                          className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg text-xs transition-colors inline-flex items-center gap-1"
-                          title="Preview and print lab report"
+                          onClick={() => setTrendPatient({ id: order.patientId, name: order.patientName, phone: order.patientPhone })}
+                          className="px-2.5 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold rounded-lg text-xs transition-colors inline-flex items-center gap-1"
+                          title="View historical health progression graph for this patient"
                         >
-                          <Printer className="w-3 h-3" />
-                          <span>Report</span>
+                          <TrendingUp className="w-3.5 h-3.5 text-purple-600" />
+                          <span>Trend</span>
+                        </button>
+
+                        <button
+                          onClick={() => onSelectOrderForPrint(order.id)}
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold rounded-lg text-xs transition-all inline-flex items-center gap-1.5 shadow-sm"
+                          title="Preview and print official A4 lab report"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          <span>Print Report</span>
                         </button>
 
                         <button
                           onClick={() => handleDelete(order.id)}
-                          className="p-1 text-slate-400 hover:text-red-600 rounded transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-red-600 rounded transition-colors"
                           title="Delete record"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -376,6 +388,20 @@ export const RecordsList: React.FC<RecordsListProps> = ({
           </table>
         </div>
       </div>
+
+      {/* Patient Health Trend Graph Modal */}
+      {trendPatient && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+            <PatientTrendGraph
+              patientId={trendPatient.id}
+              patientName={trendPatient.name}
+              patientPhone={trendPatient.phone}
+              onClose={() => setTrendPatient(null)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -66,41 +66,34 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, setting
               <Activity className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-base sm:text-lg leading-tight text-white tracking-wide flex items-center gap-2">
-                {settings?.labName || 'Village Lab Diagnostics'}
+              <h1 className="font-bold text-base sm:text-lg leading-tight text-white tracking-wide flex items-center gap-2 font-sans">
+                {settings?.labName || 'DIVINE LABORATORY'}
               </h1>
               <div className="flex items-center gap-2 text-xs">
-                <span className="text-teal-400 font-medium tracking-wider uppercase">
-                  Centralized Multi-Branch System
+                <span className="text-teal-400 font-bold tracking-wider uppercase">
+                  Koottummugham &amp; Chandanakkampara
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Active Branch Selector / Badge */}
+          {/* Active Branch Selector / Quick Switch */}
           <div className="hidden md:flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5">
             <Building2 className="w-4 h-4 text-teal-400" />
-            {user?.role === 'owner' ? (
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-slate-400">Branch:</span>
-                <select
-                  value={currentBranch.id}
-                  onChange={(e) => switchBranch(e.target.value)}
-                  className="bg-transparent text-xs font-bold text-teal-300 focus:outline-none cursor-pointer"
-                >
-                  {availableBranches.map(b => (
-                    <option key={b.id} value={b.id} className="bg-slate-800 text-white">
-                      [{b.code}] {b.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <div className="text-xs font-semibold text-teal-300">
-                <span className="text-slate-400 mr-1">Active Branch:</span>
-                [{currentBranch.code}] {currentBranch.name}
-              </div>
-            )}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-slate-400 font-medium">Branch:</span>
+              <select
+                value={currentBranch.id}
+                onChange={(e) => switchBranch(e.target.value)}
+                className="bg-slate-900 border border-slate-700 text-xs font-bold text-teal-300 rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
+              >
+                {availableBranches.map(b => (
+                  <option key={b.id} value={b.id} className="bg-slate-800 text-white">
+                    [{b.code}] {b.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Sync & Connectivity Status Badges */}

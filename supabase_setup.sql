@@ -18,8 +18,8 @@ CREATE TABLE IF NOT EXISTS public.branches (
 -- Insert Default Branches
 INSERT INTO public.branches (id, code, name, address, phone, is_active)
 VALUES 
-  ('branch-01', 'BR01', 'Village Rampur Branch (Rural Diagnostic Care)', 'Opp. Primary Health Center, Rampur Village', '+91 98765 11111', true),
-  ('branch-02', 'BR02', 'Tehsil HQ Central Diagnostic Centre', 'Civil Lines, Tehsil Headquarters Market', '+91 98765 22222', true)
+  ('branch-01', 'BR01', 'Divine Laboratory - Koottummugham, Sreekandapuram', 'Koottummugham, Sreekandapuram, Kannur, Kerala', '+91 94470 12345', true),
+  ('branch-02', 'BR02', 'Divine Laboratory - Chandanakkampara, Payyavoor', 'Chandanakkampara, Payyavoor, Kannur, Kerala', '+91 94470 67890', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- 2. Create Patients Table (Scoped with branch_id)

@@ -65,8 +65,20 @@ export async function initializeDatabase(): Promise<void> {
   const existingSettings = await db.settings.get('lab_profile');
   if (!existingSettings) {
     await db.settings.put(defaultSettings);
-  } else if (!existingSettings.cloudSyncKey || !existingSettings.cloudSyncUrl) {
+  } else {
+    // If settings still has legacy name or missing sync keys, upgrade to DIVINE LABORATORY
     await db.settings.update('lab_profile', {
+      labName: 'DIVINE LABORATORY',
+      tagline: defaultSettings.tagline,
+      address: defaultSettings.address,
+      phone: defaultSettings.phone,
+      regNo: defaultSettings.regNo,
+      pathologistName: defaultSettings.pathologistName,
+      pathologistDegree: defaultSettings.pathologistDegree,
+      technicianName: defaultSettings.technicianName,
+      currentBranchName: existingSettings.currentBranchCode === 'BR02' 
+        ? 'Divine Laboratory - Chandanakkampara, Payyavoor' 
+        : 'Divine Laboratory - Koottummugham, Sreekandapuram',
       cloudSyncUrl: existingSettings.cloudSyncUrl || defaultSettings.cloudSyncUrl,
       cloudSyncKey: existingSettings.cloudSyncKey || defaultSettings.cloudSyncKey,
     });
