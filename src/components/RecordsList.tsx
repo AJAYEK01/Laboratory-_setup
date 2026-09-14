@@ -7,9 +7,13 @@ import {
   Printer, 
   Trash2,
   Filter,
-  TrendingUp
+  TrendingUp,
+  Phone,
+  Building2,
+  X
 } from 'lucide-react';
 import { db } from '../db/index';
+import { useAuth } from '../context/AuthContext';
 import { PatientTrendGraph } from './PatientTrendGraph';
 
 interface RecordsListProps {
@@ -21,7 +25,10 @@ export const RecordsList: React.FC<RecordsListProps> = ({
   onSelectOrderForResults,
   onSelectOrderForPrint,
 }) => {
+  const { user, currentBranch } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
+  const [phoneSearch, setPhoneSearch] = useState('');
+  const [branchFilter, setBranchFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<'today' | 'yesterday' | 'week' | 'month' | 'all' | 'custom'>('all');
   const [customDate, setCustomDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -48,20 +55,41 @@ export const RecordsList: React.FC<RecordsListProps> = ({
 
   const filteredOrders = useMemo(() => {
     return allOrders.filter(order => {
-      let matchesDate = true;
-      if (dateFilter === 'today') {
-        matchesDate = order.orderDate === todayStr;
-      } else if (dateFilter === 'yesterday') {
-        matchesDate = order.orderDate === yesterdayStr;
-      } else if (dateFilter === 'week') {
-        matchesDate = order.orderDate >= sevenDaysAgoStr;
-      } else if (dateFilter === 'month') {
-        matchesDate = order.orderDate.startsWith(currentMonthStr);
-      } else if (dateFilter === 'custom') {
-        matchesDate = order.orderDate === customDate;
+      // Branch scoping:
+      // Technicians ONLY see their designated branch
+      if (user?.role === 'technician' && currentBranch) {
+        if (order.branchId && order.branchId !== currentBranch.id) {
+          return false;
+        }
+      } else if (user?.role === 'owner') {
+        // Owner can filter by branch or view all
+        if (branchFilter !== 'all' && order.branchId && order.branchId !== branchFilter) {
+          return false;
+        }
       }
 
-      if (!matchesDate) return false;
+      // Dedicated Phone Search overrides date filtering to surface full medical history
+      if (phoneSearch.trim()) {
+        const cleanPhone = phoneSearch.trim().toLowerCase();
+        const matchesPhone = order.patientPhone && order.patientPhone.toLowerCase().includes(cleanPhone);
+        if (!matchesPhone) return false;
+      } else {
+        // Standard Date Filter
+        let matchesDate = true;
+        if (dateFilter === 'today') {
+          matchesDate = order.orderDate === todayStr;
+        } else if (dateFilter === 'yesterday') {
+          matchesDate = order.orderDate === yesterdayStr;
+        } else if (dateFilter === 'week') {
+          matchesDate = order.orderDate >= sevenDaysAgoStr;
+        } else if (dateFilter === 'month') {
+          matchesDate = order.orderDate.startsWith(currentMonthStr);
+        } else if (dateFilter === 'custom') {
+          matchesDate = order.orderDate === customDate;
+        }
+
+        if (!matchesDate) return false;
+      }
 
       if (statusFilter !== 'all') {
         if (statusFilter === 'completed' && order.overallStatus !== 'completed' && order.overallStatus !== 'printed') return false;
@@ -72,17 +100,40 @@ export const RecordsList: React.FC<RecordsListProps> = ({
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = order.patientName.toLowerCase().includes(q);
-        const matchesPhone = order.patientPhone.includes(q);
-        const matchesId = order.id.toLowerCase().includes(q) || order.patientId.toLowerCase().includes(q);
-        const matchesDoc = order.referralDoctor.toLowerCase().includes(q);
-        const matchesTest = order.tests.some(t => t.testName.toLowerCase().includes(q) || t.testCode.toLowerCase().includes(q));
+        const matchesPhone = order.patientPhone && order.patientPhone.includes(q);
+        const matchesId = order.id.toLowerCase().includes(q) || (order.patientId && order.patientId.toLowerCase().includes(q));
+        const matchesDoc = order.referralDoctor && order.referralDoctor.toLowerCase().includes(q);
+        const matchesTest = order.tests && order.tests.some(t => t.testName.toLowerCase().includes(q) || t.testCode.toLowerCase().includes(q));
 
         return matchesName || matchesPhone || matchesId || matchesDoc || matchesTest;
       }
 
       return true;
     });
-  }, [allOrders, dateFilter, customDate, statusFilter, searchQuery, todayStr, yesterdayStr, sevenDaysAgoStr, currentMonthStr]);
+  }, [allOrders, user, currentBranch, branchFilter, phoneSearch, dateFilter, customDate, statusFilter, searchQuery, todayStr, yesterdayStr, sevenDaysAgoStr, currentMonthStr]);
+
+  // If phone search is active and has results, derive patient dossier summary
+  const phoneHistorySummary = useMemo(() => {
+    if (!phoneSearch.trim() || filteredOrders.length === 0) return null;
+    const firstOrder = filteredOrders[0];
+    const totalVisits = filteredOrders.length;
+    const totalSpent = filteredOrders.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
+    const totalTestsCount = filteredOrders.reduce((sum, o) => sum + (o.tests?.length || 0), 0);
+
+    return {
+      patientId: firstOrder.patientId,
+      name: firstOrder.patientName,
+      age: firstOrder.patientAge,
+      ageUnit: firstOrder.patientAgeUnit,
+      gender: firstOrder.patientGender,
+      phone: firstOrder.patientPhone,
+      totalVisits,
+      totalSpent,
+      totalTestsCount,
+      firstVisit: filteredOrders[filteredOrders.length - 1]?.orderDate,
+      latestVisit: firstOrder.orderDate,
+    };
+  }, [phoneSearch, filteredOrders]);
 
   const totalRevenue = useMemo(() => {
     return filteredOrders.reduce((acc, curr) => acc + curr.paidAmount, 0);
@@ -217,32 +268,143 @@ export const RecordsList: React.FC<RecordsListProps> = ({
         </div>
       </div>
 
-      {/* Search & Status Filter Row */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-col sm:flex-row justify-between items-center gap-3">
-        <div className="relative w-full sm:w-80">
+      {/* Dedicated Patient Phone History Search Card */}
+      <div className="bg-white p-4 rounded-xl border border-teal-100 shadow-xs mb-5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
+              <Phone className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900">
+                Patient Medical History by Phone Number
+              </h3>
+              <p className="text-[11px] text-slate-500">
+                Type 10-digit mobile number to pull entire lifetime test history across all dates
+              </p>
+            </div>
+          </div>
+          {phoneSearch && (
+            <button
+              onClick={() => setPhoneSearch('')}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 px-2.5 py-1 rounded-lg transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+              <span>Clear Phone Search</span>
+            </button>
+          )}
+        </div>
+
+        <div className="relative">
+          <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+          <input
+            type="tel"
+            placeholder="Type patient mobile number (e.g. 9876543210)..."
+            value={phoneSearch}
+            onChange={(e) => setPhoneSearch(e.target.value)}
+            className="w-full pl-10 pr-10 py-2.5 text-sm font-medium rounded-lg border border-slate-300 focus:border-teal-700 focus:ring-1 focus:ring-teal-700 focus:outline-none placeholder:text-slate-400 bg-slate-50/50"
+          />
+        </div>
+      </div>
+
+      {/* Patient Lifetime History Dossier Card (Displayed when phone search finds records) */}
+      {phoneHistorySummary && (
+        <div className="mb-6 bg-gradient-to-r from-teal-50/90 to-cyan-50/70 border border-teal-200 rounded-xl p-4 sm:p-5 shadow-xs">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start sm:items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+                {phoneHistorySummary.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-base font-bold text-slate-900">{phoneHistorySummary.name}</h4>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-teal-100 text-teal-800 font-semibold">
+                    {phoneHistorySummary.gender}, {phoneHistorySummary.age} {phoneHistorySummary.ageUnit}
+                  </span>
+                  <span className="text-xs text-slate-600 font-medium">
+                    Phone: <span className="font-bold text-slate-800">{phoneHistorySummary.phone}</span>
+                  </span>
+                </div>
+                <p className="text-xs text-slate-600 mt-0.5">
+                  First visit: <span className="font-semibold text-slate-800">{phoneHistorySummary.firstVisit}</span> • 
+                  Latest visit: <span className="font-semibold text-slate-800">{phoneHistorySummary.latestVisit}</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="bg-white/90 border border-teal-100 rounded-lg px-3 py-1.5 text-center">
+                <span className="text-[10px] text-slate-500 font-semibold block uppercase">Total Visits</span>
+                <span className="text-sm font-bold text-teal-800">{phoneHistorySummary.totalVisits}</span>
+              </div>
+              <div className="bg-white/90 border border-teal-100 rounded-lg px-3 py-1.5 text-center">
+                <span className="text-[10px] text-slate-500 font-semibold block uppercase">Tests Taken</span>
+                <span className="text-sm font-bold text-slate-800">{phoneHistorySummary.totalTestsCount}</span>
+              </div>
+              <div className="bg-white/90 border border-teal-100 rounded-lg px-3 py-1.5 text-center">
+                <span className="text-[10px] text-slate-500 font-semibold block uppercase">Total Billed</span>
+                <span className="text-sm font-bold text-slate-900">{currency}{phoneHistorySummary.totalSpent}</span>
+              </div>
+
+              <button
+                onClick={() => setTrendPatient({
+                  id: phoneHistorySummary.patientId,
+                  name: phoneHistorySummary.name,
+                  phone: phoneHistorySummary.phone
+                })}
+                className="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg text-xs transition-colors flex items-center gap-1.5 shadow-sm ml-auto"
+              >
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>View Health Trend Graph</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* General Search & Status / Branch Filter Row */}
+      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
+        <div className="relative flex-1 max-w-md">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
           <input
             type="text"
-            placeholder="Search patient name, mobile, test or doctor..."
+            placeholder="Search patient name, lab ID, doctor or test name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500"
           />
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto text-xs">
-          <Filter className="w-4 h-4 text-slate-400" />
-          <span className="text-slate-600 font-medium">Status:</span>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
-          >
-            <option value="all">All Statuses</option>
-            <option value="completed">Completed / Ready to Print</option>
-            <option value="pending">Pending Test Results</option>
-            <option value="printed">Already Printed</option>
-          </select>
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          {/* Owner Branch Filter */}
+          {user?.role === 'owner' && (
+            <div className="flex items-center gap-1.5">
+              <Building2 className="w-4 h-4 text-slate-400" />
+              <select
+                value={branchFilter}
+                onChange={(e) => setBranchFilter(e.target.value)}
+                className="px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
+              >
+                <option value="all">All Branches (Consolidated)</option>
+                <option value="branch-01">Koottummugham (BR01)</option>
+                <option value="branch-02">Chandanakkampara (BR02)</option>
+              </select>
+            </div>
+          )}
+
+          <div className="flex items-center gap-1.5">
+            <Filter className="w-4 h-4 text-slate-400" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-slate-300 bg-white text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="all">All Statuses</option>
+              <option value="completed">Completed / Ready to Print</option>
+              <option value="pending">Pending Test Results</option>
+              <option value="printed">Already Printed</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -253,6 +415,9 @@ export const RecordsList: React.FC<RecordsListProps> = ({
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] tracking-wider">
                 <th className="py-3 px-4 font-semibold">Date &amp; Time</th>
+                {user?.role === 'owner' && (
+                  <th className="py-3 px-4 font-semibold">Branch</th>
+                )}
                 <th className="py-3 px-4 font-semibold">Patient Name &amp; Info</th>
                 <th className="py-3 px-4 font-semibold">Doctor Ref</th>
                 <th className="py-3 px-4 font-semibold">Booked Tests</th>
@@ -265,7 +430,7 @@ export const RecordsList: React.FC<RecordsListProps> = ({
             <tbody className="divide-y divide-slate-100">
               {filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400 text-xs">
+                  <td colSpan={user?.role === 'owner' ? 9 : 8} className="py-12 text-center text-slate-400 text-xs">
                     No patient records found for the selected filter or search term.
                   </td>
                 </tr>
@@ -279,6 +444,18 @@ export const RecordsList: React.FC<RecordsListProps> = ({
                         <div className="font-semibold text-slate-800 text-xs">{order.orderDate}</div>
                         <div className="text-[11px] text-slate-400">{order.orderTime}</div>
                       </td>
+
+                      {user?.role === 'owner' && (
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${
+                            order.branchCode === 'BR02' || order.branchId === 'branch-02'
+                              ? 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                              : 'bg-teal-50 text-teal-700 border border-teal-200'
+                          }`}>
+                            {order.branchCode === 'BR02' || order.branchId === 'branch-02' ? 'BR02 Payyavoor' : 'BR01 Koottummugham'}
+                          </span>
+                        </td>
+                      )}
 
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-slate-900 text-sm">{order.patientName}</div>

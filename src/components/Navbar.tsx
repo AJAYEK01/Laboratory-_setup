@@ -46,13 +46,18 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, setting
     await syncManager.syncNow();
   };
 
-  const navItems = [
+  const isOwner = user?.role === 'owner';
+
+  const navItems = isOwner ? [
+    { id: 'dashboard', label: 'Executive Overview', icon: BarChart3 },
+    { id: 'records', label: 'All Records', icon: Clock },
+    { id: 'catalog', label: 'Test Catalog', icon: FlaskConical },
+    { id: 'settings', label: 'Lab Settings', icon: Settings },
+  ] : [
     { id: 'booking', label: 'New Patient', icon: UserPlus },
     { id: 'results', label: 'Enter Results', icon: Activity },
     { id: 'records', label: 'Records & History', icon: Clock },
     { id: 'catalog', label: 'Test Catalog', icon: FlaskConical },
-    { id: 'dashboard', label: 'Owner View', icon: BarChart3 },
-    { id: 'settings', label: 'Lab Settings', icon: Settings },
   ];
 
   return (
@@ -61,7 +66,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, setting
         {/* Top Tier */}
         <div className="flex items-center justify-between h-16">
           {/* Logo & Lab Info */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onSelectTab('booking')}>
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onSelectTab(isOwner ? 'dashboard' : 'booking')}>
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-emerald-400 flex items-center justify-center shadow-md shadow-teal-500/30">
               <Activity className="w-6 h-6 text-white" />
             </div>
@@ -71,29 +76,36 @@ export const Navbar: React.FC<NavbarProps> = ({ currentTab, onSelectTab, setting
               </h1>
               <div className="flex items-center gap-2 text-xs">
                 <span className="text-teal-400 font-bold tracking-wider uppercase">
-                  Koottummugham &amp; Chandanakkampara
+                  {isOwner ? 'Executive Portal (Central HQ)' : `[${currentBranch.code}] ${currentBranch.name.replace('Divine Laboratory - ', '')}`}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Active Branch Selector / Quick Switch */}
+          {/* Active Branch Display: Switcher for Owner only, locked badge for Tech */}
           <div className="hidden md:flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5">
             <Building2 className="w-4 h-4 text-teal-400" />
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs text-slate-400 font-medium">Branch:</span>
-              <select
-                value={currentBranch.id}
-                onChange={(e) => switchBranch(e.target.value)}
-                className="bg-slate-900 border border-slate-700 text-xs font-bold text-teal-300 rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
-              >
-                {availableBranches.map(b => (
-                  <option key={b.id} value={b.id} className="bg-slate-800 text-white">
-                    [{b.code}] {b.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {isOwner ? (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-slate-400 font-medium">Branch:</span>
+                <select
+                  value={currentBranch.id}
+                  onChange={(e) => switchBranch(e.target.value)}
+                  className="bg-slate-900 border border-slate-700 text-xs font-bold text-teal-300 rounded-lg px-2 py-1 focus:outline-none cursor-pointer"
+                >
+                  {availableBranches.map(b => (
+                    <option key={b.id} value={b.id} className="bg-slate-800 text-white">
+                      [{b.code}] {b.name.replace('Divine Laboratory - ', '')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div className="text-xs font-bold text-teal-300">
+                <span className="text-slate-400 font-normal mr-1">Counter:</span>
+                [{currentBranch.code}] {currentBranch.name.replace('Divine Laboratory - ', '')}
+              </div>
+            )}
           </div>
 
           {/* Sync & Connectivity Status Badges */}

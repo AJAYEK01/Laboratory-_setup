@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, initializeDatabase } from './db/index';
-import { AuthProvider } from './context/AuthContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
-import { LoginModal } from './components/LoginModal';
+import { LoginPage } from './components/LoginPage';
 import { NewBooking } from './components/NewBooking';
 import { ResultEntry } from './components/ResultEntry';
 import { RecordsList } from './components/RecordsList';
@@ -13,6 +13,7 @@ import { OwnerDashboard } from './components/OwnerDashboard';
 import { LabSettingsModal } from './components/LabSettingsModal';
 
 const LabApp: React.FC = () => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('booking');
   const [targetOrderId, setTargetOrderId] = useState<string | null>(null);
   const [isDbReady, setIsDbReady] = useState(false);
@@ -24,6 +25,17 @@ const LabApp: React.FC = () => {
       setIsDbReady(true);
     });
   }, []);
+
+  // Set default landing tab according to role
+  useEffect(() => {
+    if (user) {
+      if (user.role === 'owner') {
+        setActiveTab('dashboard');
+      } else {
+        setActiveTab('booking');
+      }
+    }
+  }, [user?.role]);
 
   const handleOrderCreated = (orderId: string, directToResults: boolean) => {
     setTargetOrderId(orderId);
@@ -46,12 +58,17 @@ const LabApp: React.FC = () => {
 
   if (!isDbReady) {
     return (
-      <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-4 border-teal-400 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <h2 className="text-lg font-bold">Initializing Village LabPulse...</h2>
-        <p className="text-xs text-slate-400 mt-1">Securing persistent local database storage...</p>
+      <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center font-sans">
+        <div className="w-10 h-10 border-3 border-teal-400 border-t-transparent rounded-full animate-spin mb-3"></div>
+        <h2 className="text-base font-bold">Initializing Divine Laboratory...</h2>
+        <p className="text-xs text-slate-400 mt-1">Securing local offline database storage...</p>
       </div>
     );
+  }
+
+  // MANDATORY LOGIN GATE: Only after login the interface is visible
+  if (!user) {
+    return <LoginPage />;
   }
 
   return (
@@ -63,8 +80,6 @@ const LabApp: React.FC = () => {
         }} 
         settings={settings} 
       />
-
-      <LoginModal />
 
       <main className="flex-1 pb-12">
         {activeTab === 'booking' && (

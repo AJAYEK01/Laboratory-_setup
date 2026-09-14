@@ -52,6 +52,56 @@ export const NewBooking: React.FC<NewBookingProps> = ({ onOrderCreated }) => {
   const [referralDoctor, setReferralDoctor] = useState('Self');
   const [customDoctor, setCustomDoctor] = useState('');
 
+  // Returning patient lookup by phone number
+  const [matchedPatient, setMatchedPatient] = useState<{
+    name: string;
+    age: number;
+    ageUnit: AgeUnit;
+    gender: Gender;
+    referralDoctor?: string;
+    address?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    const cleanPhone = phone.trim();
+    if (cleanPhone.length >= 6) {
+      let active = true;
+      (async () => {
+        try {
+          const p = await db.patients.where('phone').equals(cleanPhone).first();
+          if (p && active) {
+            setMatchedPatient({
+              name: p.name,
+              age: p.age,
+              ageUnit: p.ageUnit,
+              gender: p.gender,
+              referralDoctor: p.referralDoctor,
+              address: p.address,
+            });
+            return;
+          }
+          const o = await db.orders.where('patientPhone').equals(cleanPhone).reverse().first();
+          if (o && active) {
+            setMatchedPatient({
+              name: o.patientName,
+              age: o.patientAge,
+              ageUnit: o.patientAgeUnit,
+              gender: o.patientGender,
+              referralDoctor: o.referralDoctor,
+            });
+            return;
+          }
+          if (active) setMatchedPatient(null);
+        } catch {
+          if (active) setMatchedPatient(null);
+        }
+      })();
+      return () => { active = false; };
+    } else {
+      setMatchedPatient(null);
+    }
+  }, [phone]);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedTests, setSelectedTests] = useState<TestTemplate[]>([]);
@@ -359,6 +409,36 @@ export const NewBooking: React.FC<NewBookingProps> = ({ onOrderCreated }) => {
                   onChange={(e) => setPhone(e.target.value)}
                   className="w-full px-3.5 py-2 rounded-lg border border-slate-300 focus:border-teal-700 focus:outline-none text-sm font-medium text-slate-900 placeholder:text-slate-400"
                 />
+
+                {/* Returning Patient Autofill Prompt */}
+                {matchedPatient && (!patientName || patientName.trim().toLowerCase() !== matchedPatient.name.trim().toLowerCase()) && (
+                  <div className="mt-2 p-2.5 bg-teal-50/90 border border-teal-200 rounded-lg flex items-center justify-between gap-2">
+                    <div className="text-xs text-teal-950 truncate">
+                      <span className="font-bold">Returning Patient:</span> {matchedPatient.name} ({matchedPatient.age} {matchedPatient.ageUnit}, {matchedPatient.gender})
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPatientName(matchedPatient.name);
+                        setAge(matchedPatient.age);
+                        setAgeUnit(matchedPatient.ageUnit);
+                        setGender(matchedPatient.gender);
+                        if (matchedPatient.referralDoctor) {
+                          if (quickDoctors.includes(matchedPatient.referralDoctor)) {
+                            setReferralDoctor(matchedPatient.referralDoctor);
+                          } else {
+                            setReferralDoctor('Other');
+                            setCustomDoctor(matchedPatient.referralDoctor);
+                          }
+                        }
+                        if (matchedPatient.address) setAddress(matchedPatient.address);
+                      }}
+                      className="px-2.5 py-1 bg-teal-700 hover:bg-teal-800 active:bg-teal-900 text-white rounded text-xs font-bold transition-all shrink-0 shadow-xs"
+                    >
+                      Autofill
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Referred Doctor */}

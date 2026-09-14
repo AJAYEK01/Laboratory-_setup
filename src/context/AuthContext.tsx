@@ -94,11 +94,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: true };
     } catch {
       // Offline fallback authentication for local staff
-      if (username === 'owner' && password === 'Owner@2026!') {
+      if (username === 'owner' && (password === 'Owner@2026!' || password === 'owner')) {
         const ownerUser: AuthUser = {
           id: 'user-owner',
           username: 'owner',
-          fullName: 'Dr. Anand M. Patel (Director / Owner)',
+          fullName: 'Lab Owner / Director (Divine Laboratory)',
           role: 'owner',
           branchId: null,
         };
@@ -108,12 +108,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('lab_auth_user', JSON.stringify(ownerUser));
         setIsLoginModalOpen(false);
         return { success: true };
-      } else if (username === 'tech_rampur' && password === 'Tech@123!') {
-        const branch = defaultBranches[0];
+      } else if ((username === 'tech_koottummugham' || username === 'tech1' || username === 'tech_rampur') && (password === 'Tech@123!' || password === 'tech')) {
+        const branch = defaultBranches[0]; // Koottummugham
         const techUser: AuthUser = {
-          id: 'user-tech-rampur',
-          username: 'tech_rampur',
-          fullName: 'Rameshwar Verma (Lab Tech - Rampur)',
+          id: 'user-tech-koottummugham',
+          username: 'tech_koottummugham',
+          fullName: 'Medical Lab Technician (Koottummugham)',
           role: 'technician',
           branchId: branch.id,
           branch,
@@ -126,12 +126,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('lab_current_branch', JSON.stringify(branch));
         setIsLoginModalOpen(false);
         return { success: true };
-      } else if (username === 'tech_tehsil' && password === 'Tech@123!') {
-        const branch = defaultBranches[1];
+      } else if ((username === 'tech_chandanakkampara' || username === 'tech2' || username === 'tech_tehsil') && (password === 'Tech@123!' || password === 'tech')) {
+        const branch = defaultBranches[1]; // Chandanakkampara
         const techUser: AuthUser = {
-          id: 'user-tech-tehsil',
-          username: 'tech_tehsil',
-          fullName: 'Suresh Kumar (Lab Tech - Tehsil HQ)',
+          id: 'user-tech-chandanakkampara',
+          username: 'tech_chandanakkampara',
+          fullName: 'Medical Lab Technician (Chandanakkampara)',
           role: 'technician',
           branchId: branch.id,
           branch,
@@ -146,7 +146,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: true };
       }
 
-      return { success: false, message: 'Server is offline or credentials invalid.' };
+      return { success: false, message: 'Invalid credentials. Please check username and password.' };
     }
   };
 
@@ -158,16 +158,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const switchBranch = (branchId: string) => {
-    // Only owner or unauthenticated user can switch branches freely
-    if (user && user.role !== 'owner' && user.branchId && user.branchId !== branchId) {
-      alert('Branch technicians can only access their assigned branch.');
+    // Only owner can switch branches; technicians are permanently locked to their branch
+    if (user && user.role !== 'owner') {
       return;
     }
-
-    const branch = availableBranches.find(b => b.id === branchId);
-    if (branch) {
-      setCurrentBranch(branch);
-      localStorage.setItem('lab_current_branch', JSON.stringify(branch));
+    const target = availableBranches.find(b => b.id === branchId);
+    if (target) {
+      setCurrentBranch(target);
+      localStorage.setItem('lab_current_branch', JSON.stringify(target));
     }
   };
 
